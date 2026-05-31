@@ -1,0 +1,1 @@
+STANDINGS = "https://www.sofascore.com/api/v1/unique-tournament/16/season/58210/standings/total"

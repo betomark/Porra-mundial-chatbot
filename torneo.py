@@ -1,0 +1,74 @@
+import pandas as pd
+import json
+import time
+from selenium import webdriver
+
+options = webdriver.ChromeOptions()
+options.add_experimental_option("detach", True)
+options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
+
+print("🚀 Iniciando navegador...")
+driver = webdriver.Chrome(options=options)
+
+# Aquí guardaremos todas las respuestas de la API
+# La clave será la URL y el valor será el diccionario con los datos
+
+try:
+    print("🌐 Cargando Sofascore...")
+    driver.get("https://www.sofascore.com/es/football/tournament/world/world-championship/16#id:58210")
+    
+    # Esperamos a que cargue e interactúe la página
+    time.sleep(2)
+    print("📜 Haciendo scroll...")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    
+    print("🔍 Analizando tráfico de red y extrayendo datos...")
+    logs_raw = driver.get_log("performance")
+    
+    for entry in logs_raw:
+        log = json.loads(entry["message"])["message"]
+        
+        # Esta vez buscamos "Network.responseReceived" (cuando la respuesta ya llegó al navegador)
+        if log["method"] == "Network.responseReceived":
+            params = log["params"]
+            response = params["response"]
+            url = response["url"]
+            
+            # Filtramos solo las llamadas que apunten a la API de Sofascore
+            if "sofascore.com/api/v1/unique-tournament/16/scheduled-events/" in url or "sofascore.com/api/v1/unique-tournament/16/season/58210/standings/total" in url:
+                request_id = params["requestId"]
+                
+                try:
+                    # Le pedimos a Chrome el cuerpo (body) de esa respuesta específica mediante su ID
+                    body_data = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": request_id})
+                    
+                    # body_data['body'] contiene el JSON en formato texto plano (string)
+                    json_texto = body_data["body"]
+                    # Convertimos ese texto en un DICCIONARIO de Python real
+                    datos_diccionario = json.loads(json_texto)
+                    claves = datos_diccionario.keys()
+                    print(f"✅ Datos extraídos de {url} con claves: {claves}")
+                    if "standings" in claves:
+                        print("📊 Guardando clasificación...")
+                        # Guardamos el diccionario usando la URL como identificador
+                        with open("data/standings.json", "w", encoding="utf-8") as f:
+                            json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
+                    elif "events" in claves:
+                        print("📅 Guardando eventos programados...")
+                        for evento in datos_diccionario["events"]:
+                            local = evento["homeTeam"]["name"]
+                            visitante = evento["awayTeam"]["name"]
+                            print(f"   - {local} vs {visitante} el {evento['startTimestamp']}")
+                            nombre_archivo = f"data/scheduled_event_{local} vs {visitante} el {evento['startTimestamp']}.json"
+                            with open(nombre_archivo, "w", encoding="utf-8") as f:
+                                json.dump(evento, f, indent=4, ensure_ascii=False)
+                except Exception:
+                    # Algunas peticiones (como respuestas 204 o pendientes) no tienen contenido y darán error aquí.
+                    # Las ignoramos de forma segura.
+                    pass
+
+except Exception as e:
+    print(f"❌ Ocurrió un error general: {e}")
+
+
+

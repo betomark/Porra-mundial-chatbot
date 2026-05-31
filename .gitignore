@@ -1,0 +1,8 @@
+# Ignore virtual environment
+/porra/
+/data/
+/.vscode/
+/.venv/
+
+# Ignore Python cache
+__pycache__/

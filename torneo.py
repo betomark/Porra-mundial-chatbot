@@ -21,13 +21,13 @@ try:
     time.sleep(2)
     print("📜 Haciendo scroll...")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    
+    time.sleep(2)
     print("🔍 Analizando tráfico de red y extrayendo datos...")
     logs_raw = driver.get_log("performance")
     
     for entry in logs_raw:
         log = json.loads(entry["message"])["message"]
-        
+       
         # Esta vez buscamos "Network.responseReceived" (cuando la respuesta ya llegó al navegador)
         if log["method"] == "Network.responseReceived":
             params = log["params"]
@@ -35,7 +35,7 @@ try:
             url = response["url"]
             
             # Filtramos solo las llamadas que apunten a la API de Sofascore
-            if "sofascore.com/api/v1/unique-tournament/16/scheduled-events/" in url or "sofascore.com/api/v1/unique-tournament/16/season/58210/standings/total" in url:
+            if "sofascore.com/api/v1/unique-tournament/16/scheduled-events/" in url or "sofascore.com/api/v1/unique-tournament/16/season/58210/standings/total" in url or "sofascore.com/api/v1/unique-tournament/16/season/58210/power-rankings" in url:
                 request_id = params["requestId"]
                 
                 try:
@@ -53,6 +53,10 @@ try:
                         # Guardamos el diccionario usando la URL como identificador
                         with open("data/standings.json", "w", encoding="utf-8") as f:
                             json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
+                    elif "powerRankings" in claves:
+                        print("📈 Guardando ranking de poder...")
+                        with open("data/power_rankings.json", "w", encoding="utf-8") as f:
+                            json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
                     elif "events" in claves:
                         print("📅 Guardando eventos programados...")
                         for evento in datos_diccionario["events"]:
@@ -62,6 +66,7 @@ try:
                             nombre_archivo = f"data/scheduled_event_{local} vs {visitante} el {evento['startTimestamp']}.json"
                             with open(nombre_archivo, "w", encoding="utf-8") as f:
                                 json.dump(evento, f, indent=4, ensure_ascii=False)
+                    
                 except Exception:
                     # Algunas peticiones (como respuestas 204 o pendientes) no tienen contenido y darán error aquí.
                     # Las ignoramos de forma segura.

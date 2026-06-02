@@ -6,3 +6,9 @@
 
 # Ignore Python cache
 __pycache__/
+
+# Ignorar todo el contenido de la carpeta data
+data/*
+
+# Pero no ignores el archivo .gitkeep (para que la carpeta se cree)
+!data/.gitkeep

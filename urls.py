@@ -5,7 +5,7 @@ STANDINGS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{
 EVENTS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/scheduled-events/{{date}}"
 
 #match endpoints
-MATCH_ODDS = f"{SOFASCORE_BASE_URL}/event/{{game_id}}/odds/1/all"
+MATCH_ODDS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/odds/1/all"
 
 RANKING = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/power-rankings/round/{{round_id}}"
 

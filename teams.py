@@ -11,8 +11,8 @@ def get_teams(standings_dict):
     with open("data/teams.json", "w", encoding="utf-8") as f:
         json.dump(datos_equipos, f, indent=4, ensure_ascii=False)
 
-def get_team_stats(team_id):
-    url = urls.TEAM_STATS.format(team_id=team_id)
+def get_team_stats(team_id, tournament_id, season_id):
+    url = urls.TEAM_STATS.format(team_id=team_id, tournament_id=tournament_id, season_id=season_id)
     sofascore_client = utils.sofascore_client.SofascoreClient()
     return sofascore_client.get(url)
 

@@ -1,7 +1,8 @@
-import pandas as pd
 import json
 import time
 from selenium import webdriver
+import teams
+import events
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
@@ -53,6 +54,8 @@ try:
                         # Guardamos el diccionario usando la URL como identificador
                         with open("data/standings.json", "w", encoding="utf-8") as f:
                             json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
+                        print("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
+                        teams.get_teams(datos_diccionario)
                     elif "powerRankings" in claves:
                         print("📈 Guardando ranking de poder...")
                         with open("data/power_rankings.json", "w", encoding="utf-8") as f:
@@ -63,9 +66,12 @@ try:
                             local = evento["homeTeam"]["name"]
                             visitante = evento["awayTeam"]["name"]
                             print(f"   - {local} vs {visitante} el {evento['startTimestamp']}")
-                            nombre_archivo = f"data/scheduled_event_{local} vs {visitante} el {evento['startTimestamp']}.json"
+                            nombre_archivo = f"data/events/scheduled_event_{local} vs {visitante} el {evento['startTimestamp']}.json"
+                            evento_limpio = events.clean_pre_event(evento)
+                            apuestas = events.get_odds(evento["id"])
+                            evento_limpio["odds"] = apuestas
                             with open(nombre_archivo, "w", encoding="utf-8") as f:
-                                json.dump(evento, f, indent=4, ensure_ascii=False)
+                                json.dump(evento_limpio, f, indent=4, ensure_ascii=False)
                     
                 except Exception:
                     # Algunas peticiones (como respuestas 204 o pendientes) no tienen contenido y darán error aquí.

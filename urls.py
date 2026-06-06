@@ -18,3 +18,6 @@ SQUAD = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/players"
 #player endpoints
 PLAYER_SEASONS = f"{SOFASCORE_BASE_URL}/player/{{player_id}}/statistics/seasons"
 PLAYER_SEASON_STATS = f"{SOFASCORE_BASE_URL}/player/{{player_id}}/unique-tournament/{{tournament_id}}/season/{{season_id}}/statistics/overall"
+
+#league endpoints
+LEAGUE_POWER_RANKINGS = "https://dataviz.theanalyst.com/opta-power-rankings/league-meta.json"

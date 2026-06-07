@@ -6,3 +6,5 @@
 # Ignore Python cache
 __pycache__/
 
+#ignore evnironment variables file
+.env

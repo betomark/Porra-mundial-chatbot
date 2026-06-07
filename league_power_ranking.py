@@ -10235,8 +10235,15 @@ rankings = [
     "nationId": "ck8m1cn23sukwsurgx5qakttk"
   }
 ]
-
+import requests
 import json
+import urls
+
+try:
+    rankings = requests.get(urls.league_power_rankings_url).json()
+except:
+    print("Error al obtener los datos de las clasificaciones de las ligas.")
+
 datos_diccionario = {liga["leagueName"]: {"name": liga["leagueName"], "rank": liga["globalRank"], "rating": liga["seasonAverageRating"], "country": liga["countryName"], "confederation": liga["confederationName"], "size": liga["leagueSize"]} for liga in rankings}
 with open("data/league_power_rankings.json", "w", encoding="utf-8") as f:
     json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)

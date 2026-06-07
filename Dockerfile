@@ -18,4 +18,4 @@ ENV CHROME_BIN=/usr/bin/chromium
 ENV MONGO_URI=mongodb://mongodb:27017/
 ENV MONGO_DB_NAME=porra_db
 
-CMD ["python", "main.py", "extract", "--headless"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

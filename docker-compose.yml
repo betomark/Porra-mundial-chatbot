@@ -23,14 +23,15 @@ services:
     environment:
       - MONGO_URI=mongodb://mongodb:27017/
       - MONGO_DB_NAME=porra_db
-      - HEADLESS=true
     depends_on:
       mongodb:
         condition: service_healthy
+    ports:
+      - "8000:8000"
     volumes:
       - .:/usr/src/app
-    restart: "no"
-    command: ["python", "main.py", "extract", "--headless"]
+    restart: unless-stopped
+    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 volumes:
   mongo_data:

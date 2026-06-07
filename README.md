@@ -65,6 +65,26 @@ This project is a Python-based chatbot designed to interact with users about the
     docker compose run --rm app python main.py show-collections
     ```
 
+## API Service
+
+Once the Docker Compose stack is running, the API is available at `http://localhost:8000`.
+
+### Endpoints
+
+*   `GET /health` — checks app and Mongo connectivity.
+*   `GET /collections` — lists MongoDB collections.
+*   `POST /extract` — queues a background extraction task.
+*   `POST /predict` — generates a prediction from Gemini.
+
+### Example API requests
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/collections
+curl -X POST http://localhost:8000/extract -H "Content-Type: application/json" -d '{"headless": true}'
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"event_id":"12345","team_a_id":"1","team_b_id":"2"}'
+```
+
 ### Manual Installation (Without Docker)
 
 1.  **Clone the repository:**

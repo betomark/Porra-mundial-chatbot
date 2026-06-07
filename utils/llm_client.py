@@ -1,7 +1,7 @@
 import os
 import logging
 from openai import OpenAI
-# Importa aquí tu cliente de Gemini si lo seguías usando
+# Import your Gemini client here if you are still using it
 # import google.generativeai as genai 
 from utils.logging_config import setup_logging
 
@@ -15,40 +15,40 @@ class LLMClient:
         logger.info("Selected LLM provider: %s", self.provider)
         
         if self.provider == "local":
-            # Apuntamos al servidor local de Ollama
+            # Point to the local Ollama server
             self.client = OpenAI(
                 base_url=os.getenv("LOCAL_LLM_URL", "http://localhost:11434/v1"),
-                api_key="ollama" # Ollama no requiere Key, pero la librería exige un string
+                api_key="ollama" # Ollama does not require a key, but the library expects a string
             )
             self.model_name = os.getenv("LOCAL_LLM_MODEL", "llama3:8b")
             logger.info("Configured local LLM model: %s", self.model_name)
         else:
             logger.warning("LLM provider %s is not implemented yet.", self.provider)
-            # Aquí inicializarías Gemini si decides volver a la nube
+            # Initialize Gemini here if you decide to use a cloud provider
             # genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
             pass
 
-    def generar_pronostico(self, prompt_sistema, prompt_usuario):
-        """Envía el contexto purificado de SofaScore/Poisson al LLM."""
+    def generate_prediction(self, prompt_system, prompt_user):
+        """Send the cleaned SofaScore/Poisson context to the LLM."""
         logger.debug("Generating forecast with provider %s", self.provider)
         if self.provider == "local":
             try:
                 response = self.client.chat.completions.create(
                     model=self.model_name,
                     messages=[
-                        {"role": "system", "content": prompt_sistema},
-                        {"role": "user", "content": prompt_usuario}
+                        {"role": "system", "content": prompt_system},
+                        {"role": "user", "content": prompt_user}
                     ],
-                    temperature=0.2 # Temperatura baja para evitar que invente datos estadísticos
+                    temperature=0.2 # Low temperature to avoid hallucinating statistical data
                 )
                 logger.info("Forecast generated successfully for provider %s", self.provider)
                 return response.choices[0].message.content
             except Exception as e:
                 logger.error("Error connecting to local LLM (Ollama): %s", e)
-                return f"Error conectando con el LLM Local (Ollama): {e}"
+                return f"Error connecting to the local LLM (Ollama): {e}"
         else:
             logger.error("Forecast generation not implemented for provider %s", self.provider)
-            # Lógica de respuesta para Gemini
+            # Response logic for Gemini
             # model = genai.GenerativeModel('gemini-pro')
             # ...
             return None

@@ -6,8 +6,8 @@ from porra.gemini import gemini as Gemini
 from porra.world_cup_extractor import run_extractor
 
 app = FastAPI(
-    title="Porra Mundial API",
-    description="Servicio REST para extracción de datos y generación de predicciones deportivas.",
+    title="World Cup Pool API",
+    description="REST service for extracting data and generating sports predictions.",
     version="0.1.0"
 )
 

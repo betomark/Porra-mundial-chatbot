@@ -13,7 +13,7 @@ class MongoDBClient:
     _instance = None
 
     def __new__(cls):
-        """Asegura que solo exista una conexión activa (Patrón Singleton)"""
+        """Ensure that only one active connection exists (Singleton pattern)."""
         if cls._instance is None:
             logger.debug("Initializing new MongoDBClient singleton instance.")
             cls._instance = super(MongoDBClient, cls).__new__(cls)
@@ -41,7 +41,7 @@ class MongoDBClient:
         return self.database[collection_name]
 
     def save_document(self, collection_name, document, filter_fields=None, upsert=True):
-        """Guarda o actualiza un documento en MongoDB."""
+        """Save or update a document in MongoDB."""
         collection = self.get_collection(collection_name)
         document = dict(document)
         now = datetime.datetime.utcnow()

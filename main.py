@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def run_extraction(headless=False):
     if headless:
         os.environ["HEADLESS"] = "true"
-    import world_cup_extractor
+    from porra import world_cup_extractor
     world_cup_extractor.run_extractor()
 
 
@@ -20,7 +20,7 @@ def run_prediction(event_id, team_a_id, team_b_id, api_key=None, model=None):
     if model:
         os.environ["GEMINI_MODEL"] = model
 
-    from gemini import gemini as Gemini
+    from porra.gemini import gemini as Gemini
     predictor = Gemini()
     prediction = predictor.generate_prediction(event_id, team_a_id, team_b_id)
     print(prediction)

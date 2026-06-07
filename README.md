@@ -13,16 +13,17 @@ This project is a Python-based chatbot designed to interact with users about the
 ## Project Structure
 
 *   `docker-compose.yml`: Defines the services for Docker Compose (e.g., Python application, MongoDB).
-*   `requirements.txt`: Lists all Python dependencies.
-*   `events.py`: Manages World Cup events.
-*   `gemini.py`: Handles interactions with the Google Gemini API.
-*   `league_power_ranking.py`: Logic for calculating and managing league power rankings.
-*   `players.py`: Manages player data.
-*   `teams.py`: Manages team data.
-*   `tournaments.py`: Manages tournament data.
-*   `urls.py`: Potentially defines API endpoints or routes (if this is a web application).
-*   `world_cup_extractor.py`: Script for extracting World Cup-related data from external sources.
+*   `requirements.txt`: Lists the core runtime dependencies for the application.
 *   `main.py`: Entry point for running extraction and prediction workflows.
+*   `porra/`: Main application package containing the core domain logic:
+    *   `events.py`: Manages World Cup events.
+    *   `gemini.py`: Handles interactions with the Google Gemini API.
+    *   `league_power_ranking.py`: Logic for calculating and managing league power rankings.
+    *   `players.py`: Manages player data.
+    *   `teams.py`: Manages team data.
+    *   `tournaments.py`: Manages tournament data.
+    *   `urls.py`: SofaScore API endpoint definitions.
+    *   `world_cup_extractor.py`: Script for extracting World Cup-related data from external sources.
 *   `data/`: Directory for storing JSON data (e.g., scheduled events, power rankings, team data).
 *   `utils/`: Contains utility scripts:
     *   `folder_maker.py`: Utility for creating folders.
@@ -115,6 +116,8 @@ If you are using Docker Compose, run:
 ```bash
 docker compose run --rm app python main.py extract --headless
 ```
+
+> Note: The main application logic now lives under the `porra/` package, so imports and execution paths are organized for better maintainability.
 
 ## Contributing
 

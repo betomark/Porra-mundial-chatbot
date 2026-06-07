@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel
 from utils.mongo_client import MongoDBClient
 from porra.gemini import gemini as Gemini
@@ -39,6 +39,37 @@ def health():
 def list_collections():
     collections = mongo.database.list_collection_names()
     return {"collections": collections}
+
+
+def serialize_document(document: dict) -> dict:
+    if "_id" in document:
+        try:
+            document["_id"] = str(document["_id"])
+        except Exception:
+            document["_id"] = repr(document["_id"])
+    return document
+
+
+@app.get("/documents")
+def get_documents(
+    collection: str = Query(..., description="MongoDB collection name"),
+    field: str | None = Query(None, description="Optional field name to filter by"),
+    value: str | None = Query(None, description="Optional field value to filter by"),
+    limit: int = Query(50, ge=1, le=1000, description="Maximum number of documents to return")
+):
+    if field is not None and value is None:
+        raise HTTPException(status_code=400, detail="A value is required when filtering by field")
+
+    query = {}
+    if field is not None and value is not None:
+        query[field] = value
+
+    documents = mongo.find_many(collection, query=query, limit=limit)
+    return {
+        "collection": collection,
+        "query": query,
+        "documents": [serialize_document(doc) for doc in documents],
+    }
 
 
 @app.post("/extract")

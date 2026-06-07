@@ -73,6 +73,7 @@ Once the Docker Compose stack is running, the API is available at `http://localh
 
 *   `GET /health` — checks app and Mongo connectivity.
 *   `GET /collections` — lists MongoDB collections.
+*   `GET /documents` — retrieves documents from a MongoDB collection with optional field filtering.
 *   `POST /extract` — queues a background extraction task.
 *   `POST /predict` — generates a prediction from Gemini.
 
@@ -81,6 +82,7 @@ Once the Docker Compose stack is running, the API is available at `http://localh
 ```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/collections
+curl "http://localhost:8000/documents?collection=events&field=country&value=Brazil&limit=20"
 curl -X POST http://localhost:8000/extract -H "Content-Type: application/json" -d '{"headless": true}'
 curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"event_id":"12345","team_a_id":"1","team_b_id":"2"}'
 ```

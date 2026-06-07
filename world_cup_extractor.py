@@ -86,8 +86,6 @@ def run_extractor():
                                 },
                                 json_path="data/standings.json",
                                 json_data=datos_diccionario,
-                                save_json_flag=True,
-                                save_mongo_flag=True,
                                 filter_fields=["_id"],
                             )
                             logger.info("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
@@ -104,8 +102,6 @@ def run_extractor():
                                 },
                                 json_path="data/power_rankings.json",
                                 json_data=datos_diccionario,
-                                save_json_flag=True,
-                                save_mongo_flag=True,
                                 filter_fields=["_id"],
                             )
                         elif "events" in claves:
@@ -129,8 +125,6 @@ def run_extractor():
                                     },
                                     json_path=nombre_archivo,
                                     json_data=evento_limpio,
-                                    save_json_flag=True,
-                                    save_mongo_flag=True,
                                     filter_fields=["_id"],
                                 )
 

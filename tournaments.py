@@ -47,8 +47,6 @@ class Tournament:
                 },
                 json_path=output_path,
                 json_data=seasons_data,
-                save_json_flag=True,
-                save_mongo_flag=True,
                 filter_fields=["_id"],
             )
         logger.info("Retrieved %d seasons for tournament %s", len(seasons_data), self.name)
@@ -79,8 +77,6 @@ class Tournament:
                 },
                 json_path=output_path,
                 json_data=team_stats,
-                save_json_flag=True,
-                save_mongo_flag=True,
                 filter_fields=["_id"],
             )
         return team_stats

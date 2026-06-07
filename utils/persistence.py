@@ -1,3 +1,4 @@
+import os
 import logging
 from typing import Optional, Any, Dict
 
@@ -14,21 +15,37 @@ def persist(
     mongo_doc: Optional[Dict[str, Any]] = None,
     json_path: Optional[str] = None,
     json_data: Optional[Any] = None,
-    save_json_flag: bool = True,
-    save_mongo_flag: bool = True,
+    save_json_flag: Optional[bool] = None,
+    save_mongo_flag: Optional[bool] = None,
     filter_fields: Optional[list] = None,
     upsert: bool = True,
 ) -> Dict[str, Any]:
     """Persist data to JSON file, MongoDB, or both.
 
-    - If `save_json_flag` is True and `json_path` is provided, `json_data` (or `mongo_doc` if json_data is None)
-      will be saved to `json_path` using `utils.json_store.save_json`.
-    - If `save_mongo_flag` is True and `collection` and `mongo_doc` are provided, the document will be saved to MongoDB
-      using `MongoDBClient.save_document`.
+    Behavior defaults may be controlled using the environment variable `PERSIST_DEFAULT`:
+      - `json`  -> only save JSON files
+      - `mongo` -> only save to MongoDB
+      - `both`  -> save to both (default)
+
+    If `save_json_flag` or `save_mongo_flag` are provided (not None), they override the environment default.
 
     Returns a dict with results for json and mongo operations.
     """
     res = {"json": None, "mongo": None}
+
+    # Determine defaults from environment when flags are not explicitly provided
+    env_default = os.getenv("PERSIST_DEFAULT", "both").lower()
+    if env_default == "json":
+        default_json, default_mongo = True, False
+    elif env_default == "mongo":
+        default_json, default_mongo = False, True
+    else:
+        default_json, default_mongo = True, True
+
+    if save_json_flag is None:
+        save_json_flag = default_json
+    if save_mongo_flag is None:
+        save_mongo_flag = default_mongo
 
     if save_json_flag and json_path:
         try:

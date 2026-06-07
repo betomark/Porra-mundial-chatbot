@@ -10,6 +10,8 @@ MATCH_ODDS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/odds/1/all"
 RANKING = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/power-rankings/round/{{round_id}}"
 
 #team endpoints
+TEAM_SEASONS = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/player-statistics/seasons"
+TEAM_STANDINGS = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/standings/seasons"
 TEAM_LASTS_MATCHES = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/events/last/0"
 TEAM_RECENT_PERFORMANCE = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/performance"
 TEAM_STATS = f"{SOFASCORE_BASE_URL}/team/{{team_id}}/unique-tournament/{{tournament_id}}/season/{{season_id}}/statistics/overall"

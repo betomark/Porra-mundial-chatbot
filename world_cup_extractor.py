@@ -10,6 +10,7 @@ from datafc.utils import sofascore_client
 from utils.logging_config import setup_logging
 from utils.mongo_client import MongoDBClient
 from utils.json_store import save_json
+from utils.persistence import persist
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -76,30 +77,36 @@ def run_extractor():
                         logger.info(f"✅ Datos extraídos de {url} con claves: {claves}")
                         if "standings" in claves:
                             logger.info("📊 Guardando clasificación...")
-                            save_json("data/standings.json", datos_diccionario)
-                            mongo.save_document(
-                                "standings",
-                                {
+                            persist(
+                                collection="standings",
+                                mongo_doc={
                                     "_id": "world_cup_2026_standings",
                                     "reference": "world_cup_2026",
-                                    "data": datos_diccionario
+                                    "data": datos_diccionario,
                                 },
-                                filter_fields=["_id"]
+                                json_path="data/standings.json",
+                                json_data=datos_diccionario,
+                                save_json_flag=True,
+                                save_mongo_flag=True,
+                                filter_fields=["_id"],
                             )
                             logger.info("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
                             team_list = teams.get_teams(datos_diccionario, store=True)
                             logger.info(f"👥 Equipos extraídos: {[team.name for team in team_list]}")
                         elif "powerRankings" in claves:
                             logger.info("📈 Guardando ranking de poder...")
-                            save_json("data/power_rankings.json", datos_diccionario)
-                            mongo.save_document(
-                                "power_rankings",
-                                {
+                            persist(
+                                collection="power_rankings",
+                                mongo_doc={
                                     "_id": "world_cup_2026_power_rankings",
                                     "reference": "world_cup_2026",
-                                    "data": datos_diccionario
+                                    "data": datos_diccionario,
                                 },
-                                filter_fields=["_id"]
+                                json_path="data/power_rankings.json",
+                                json_data=datos_diccionario,
+                                save_json_flag=True,
+                                save_mongo_flag=True,
+                                filter_fields=["_id"],
                             )
                         elif "events" in claves:
                             logger.info("📅 Guardando eventos programados...")
@@ -111,17 +118,20 @@ def run_extractor():
                                 evento_limpio = events.clean_pre_event(evento)
                                 apuestas = events.get_odds(evento["id"])
                                 evento_limpio["odds"] = apuestas
-                                save_json(nombre_archivo, evento_limpio)
-                                mongo.save_document(
-                                    "events",
-                                    {
+                                persist(
+                                    collection="events",
+                                    mongo_doc={
                                         "_id": evento["id"],
                                         "local": local,
                                         "visitante": visitante,
                                         "startTimestamp": evento["startTimestamp"],
-                                        "event_data": evento_limpio
+                                        "event_data": evento_limpio,
                                     },
-                                    filter_fields=["_id"]
+                                    json_path=nombre_archivo,
+                                    json_data=evento_limpio,
+                                    save_json_flag=True,
+                                    save_mongo_flag=True,
+                                    filter_fields=["_id"],
                                 )
 
                     except Exception as e:

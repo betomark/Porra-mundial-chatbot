@@ -6,6 +6,7 @@ import urls
 from utils.logging_config import setup_logging
 from utils.mongo_client import MongoDBClient
 from utils.json_store import save_json
+from utils.persistence import persist
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -36,16 +37,19 @@ class Tournament:
         if store:
             output_path = f"{self.data_folder}seasons.json"
             logger.info("Saving tournament seasons for %s to %s", self.name, output_path)
-            save_json(output_path, seasons_data)
-            self.mongo.save_document(
-                "tournament_seasons",
-                {
+            persist(
+                collection="tournament_seasons",
+                mongo_doc={
                     "_id": self.tournament_id,
                     "tournament_id": self.tournament_id,
                     "tournament_name": self.name,
-                    "seasons": seasons_data
+                    "seasons": seasons_data,
                 },
-                filter_fields=["_id"]
+                json_path=output_path,
+                json_data=seasons_data,
+                save_json_flag=True,
+                save_mongo_flag=True,
+                filter_fields=["_id"],
             )
         logger.info("Retrieved %d seasons for tournament %s", len(seasons_data), self.name)
         return seasons_data
@@ -62,18 +66,21 @@ class Tournament:
         if store and team_stats is not None:
             output_path = f"{self.data_folder}stats_{season_id}_{season_name.replace('/', '-')}.json"
             logger.info("Saving tournament stats for %s season %s to %s", self.name, season_name, output_path)
-            save_json(output_path, team_stats)
-            self.mongo.save_document(
-                "tournament_stats",
-                {
+            persist(
+                collection="tournament_stats",
+                mongo_doc={
                     "_id": f"{self.tournament_id}_{season_id}",
                     "tournament_id": self.tournament_id,
                     "tournament_name": self.name,
                     "season_id": season_id,
                     "season_name": season_name,
                     "season_year": season_year,
-                    "stats": team_stats
+                    "stats": team_stats,
                 },
-                filter_fields=["_id"]
+                json_path=output_path,
+                json_data=team_stats,
+                save_json_flag=True,
+                save_mongo_flag=True,
+                filter_fields=["_id"],
             )
         return team_stats

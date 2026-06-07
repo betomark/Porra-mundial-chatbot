@@ -1,31 +1,36 @@
 import json
 import time
+import logging
 from selenium import webdriver
 import players
 import teams
 import events
-import utils.sofascore_client
+from datafc.utils import sofascore_client
+from utils.logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
 options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
-print("🚀 Iniciando navegador...")
+logger.info("🚀 Iniciando navegador...")
 driver = webdriver.Chrome(options=options)
 
 # Aquí guardaremos todas las respuestas de la API
 # La clave será la URL y el valor será el diccionario con los datos
 team_list = []
 try:
-    print("🌐 Cargando Sofascore...")
+    logger.info("🌐 Cargando Sofascore...")
     driver.get("https://www.sofascore.com/es/football/tournament/world/world-championship/16#id:58210")
     
     # Esperamos a que cargue e interactúe la página
     time.sleep(2)
-    print("📜 Haciendo scroll...")
+    logger.info("📜 Haciendo scroll...")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(2)
-    print("🔍 Analizando tráfico de red y extrayendo datos...")
+    logger.info("🔍 Analizando tráfico de red y extrayendo datos...")
     logs_raw = driver.get_log("performance")
     
     for entry in logs_raw:
@@ -50,25 +55,25 @@ try:
                     # Convertimos ese texto en un DICCIONARIO de Python real
                     datos_diccionario = json.loads(json_texto)
                     claves = datos_diccionario.keys()
-                    print(f"✅ Datos extraídos de {url} con claves: {claves}")
+                    logger.info(f"✅ Datos extraídos de {url} con claves: {claves}")
                     if "standings" in claves:
-                        print("📊 Guardando clasificación...")
+                        logger.info("📊 Guardando clasificación...")
                         # Guardamos el diccionario usando la URL como identificador
                         with open("data/standings.json", "w", encoding="utf-8") as f:
                             json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
-                        print("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
+                        logger.info("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
                         team_list = teams.get_teams(datos_diccionario, store=True)
-                        print(f"👥 Equipos extraídos: {[team.name for team in team_list]}")
+                        logger.info(f"👥 Equipos extraídos: {[team.name for team in team_list]}")
                     elif "powerRankings" in claves:
-                        print("📈 Guardando ranking de poder...")
+                        logger.info("📈 Guardando ranking de poder...")
                         with open("data/power_rankings.json", "w", encoding="utf-8") as f:
                             json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
                     elif "events" in claves:
-                        print("📅 Guardando eventos programados...")
+                        logger.info("📅 Guardando eventos programados...")
                         for evento in datos_diccionario["events"]:
                             local = evento["homeTeam"]["name"]
                             visitante = evento["awayTeam"]["name"]
-                            print(f"   - {local} vs {visitante} el {evento['startTimestamp']}")
+                            logger.info(f"   - {local} vs {visitante} el {evento['startTimestamp']}")
                             nombre_archivo = f"data/events/scheduled_event_{local} vs {visitante} el {evento['startTimestamp']}.json"
                             evento_limpio = events.clean_pre_event(evento)
                             apuestas = events.get_odds(evento["id"])
@@ -80,17 +85,17 @@ try:
                 except Exception as e:
                     # Algunas peticiones (como respuestas 204 o pendientes) no tienen contenido y darán error aquí.
                     # Las ignoramos de forma segura.
-                    print(f"⚠️ No se pudo obtener el cuerpo de la respuesta para {url}: {e}")
+                    logger.warning(f"⚠️ No se pudo obtener el cuerpo de la respuesta para {url}: {e}")
 
 except Exception as e:
-    print(f"❌ Ocurrió un error general: {e}")
+    logger.error(f"❌ Ocurrió un error general: {e}")
 
 for team in team_list:
-    print(f"📊 Obteniendo estadísticas recientes para {team.name}...")
+    logger.info(f"📊 Obteniendo estadísticas recientes para {team.name}...")
     team.get_team_recent_performance(store=True)
-    print(f"📋 Obteniendo últimos partidos para {team.name}...")
+    logger.info(f"📋 Obteniendo últimos partidos para {team.name}...")
     team.get_team_last_matches(store=True)
-    print(f"👥 Obteniendo plantilla de {team.name}...")
+    logger.info(f"👥 Obteniendo plantilla de {team.name}...")
     squad = team.get_team_squad(store=True)
     team_seasons = team.get_team_seasons(store=True)
     for tournament_name, tournament_data in team_seasons.items():
@@ -98,10 +103,10 @@ for team in team_list:
         for season in tournament_data["seasons"]:
             season_id = season["season_id"]
             season_year = season["season_year"]
-            print(f"📈 Obteniendo estadísticas para {team.name} en {tournament_name} - {season['season_name']}...")
+            logger.info(f"📈 Obteniendo estadísticas para {team.name} en {tournament_name} - {season['season_name']}...")
             team.get_team_stats(tournament_id, tournament_name, season_id, season['season_name'], season_year, store=True)
     for player in squad:
-        print(f"👤 Obteniendo estadísticas para el jugador {player.name}...")
+        logger.info(f"👤 Obteniendo estadísticas para el jugador {player.name}...")
         player_obj = players.Player(player.player_id, player.name)
         player_obj.get_player_total_stats(store=True)
 

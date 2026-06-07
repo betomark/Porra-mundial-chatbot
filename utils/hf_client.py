@@ -1,21 +1,26 @@
 import os
+import logging
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from dotenv import load_dotenv
+from utils.logging_config import setup_logging
 
 load_dotenv()
+setup_logging()
+logger = logging.getLogger(__name__)
 
 class HuggingFaceLLMClient:
     def __init__(self):
+        logger.debug("Initializing HuggingFaceLLMClient.")
         # Usamos un modelo excelente de 8B parámetros optimizado para instrucciones
         # Nota: Para modelos de Meta (Llama) podrías necesitar aceptar sus términos en la web de HF
         # Una alternativa directa y libre es "mistralai/Mistral-7B-Instruct-v0.3"
         self.model_id = os.getenv("HF_MODEL_ID", "meta-llama/Meta-Llama-3-8B-Instruct")
         
-        print(f"Cargando tokenizador para {self.model_id}...")
+        logger.info("Loading tokenizer for %s", self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         
-        print(f"Cargando modelo {self.model_id} con cuantización de 4 bits...")
+        logger.info("Loading model %s with 4-bit quantization", self.model_id)
         # Configuración para que el modelo ocupe ~5GB de RAM/VRAM en lugar de 16GB
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -28,9 +33,11 @@ class HuggingFaceLLMClient:
             quantization_config=quantization_config,
             device_map="auto" # Distribuye automáticamente entre tu Tarjeta Gráfica (GPU) y CPU
         )
+        logger.info("Model %s loaded successfully", self.model_id)
 
     def generar_pronostico(self, prompt_sistema, prompt_usuario):
         """Aplica el formato de chat oficial del modelo y genera la predicción."""
+        logger.debug("Generating prediction with HuggingFace model %s", self.model_id)
         
         # Estructuramos el diálogo tal y como lo espera el modelo de Hugging Face
         messages = [
@@ -58,5 +65,6 @@ class HuggingFaceLLMClient:
         # Decodificamos los tokens generados de vuelta a texto limpio
         generated_tokens = outputs[0][inputs.shape[-1]:]
         respuesta = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-        
+        logger.info("Generated prediction with HuggingFace model %s", self.model_id)
+
         return respuesta

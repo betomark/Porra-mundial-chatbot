@@ -1,30 +1,51 @@
 import os
 import json
+import logging
 from google import genai
 from google.genai import types
 import events
 import teams
 import players
+from utils.logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 class gemini:
     def __init__(self, api_key=None, model=None):
+        logger.debug("Initializing Gemini class.")
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         if not self.api_key:
+            logger.error("⚠️ GEMINI_API_KEY environment variable not configured.")
             raise ValueError("⚠️ Configura la variable de entorno GEMINI_API_KEY")
         self.model = model or os.getenv("GEMINI_MODEL")
         if not self.model:
+            logger.error("⚠️ GEMINI_MODEL environment variable not configured.")
             raise ValueError("⚠️ Configura la variable de entorno GEMINI_MODEL")
         self.client = genai.Client(api_key=self.api_key)
+        logger.debug("Gemini class initialized successfully.")
 
     def _load_json(self, path):
+        logger.debug(f"Attempting to load JSON from: {path}")
         """Método utilitario para leer archivos JSON de forma segura."""
         if os.path.exists(path):
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    logger.debug(f"Successfully loaded JSON from: {path}")
+                    return data
+            except json.JSONDecodeError as e:
+                logger.error(f"Error decoding JSON from {path}: {e}")
+                return None
+            except Exception as e:
+                logger.error(f"An unexpected error occurred while loading JSON from {path}: {e}")
+                return None
+        logger.warning(f"File not found: {path}")
         return None
     
     
     def build_match_context(self, event_id, team_a_id, team_b_id):
+        logger.debug(f"Building match context for event_id={event_id}, team_a_id={team_a_id}, team_b_id={team_b_id}")
         """
         Recopila selectivamente todos los JSON relacionados con un partido específico.
         Esto evita saturar la API con datos de selecciones que no van a jugar.
@@ -45,9 +66,11 @@ class gemini:
             context[f"{label}_last_matches"] = self._load_json(os.path.join(team_path, "last_matches", f"{team_id}.json"))
             # Nota: Podrías añadir squad o stats de jugadores clave aquí si lo deseas
             
+        logger.info(f"Match context built for event_id={event_id}")
         return context
     
     def generate_prediction(self, event_id, team_a_id, team_b_id):
+        logger.debug(f"Generating prediction for event_id={event_id}, team_a_id={team_a_id}, team_b_id={team_b_id}")
         """Genera el pronóstico final enviando el contexto filtrado a Gemini."""
         # Obtenemos solo los datos que importan para este partido
         match_data = self.build_match_context(event_id, team_a_id, team_b_id)
@@ -75,7 +98,7 @@ class gemini:
         try:
             # Enviamos tanto las instrucciones de comportamiento como los datos del partido
             response = self.client.models.generate_content(
-                model=self.model_name,
+                model=self.model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction="Eres un analista de datos deportivos experto...",

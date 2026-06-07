@@ -4,6 +4,7 @@ from datafc.utils import sofascore_client
 import utils.folder_maker
 import urls
 from utils.logging_config import setup_logging
+from utils.mongo_client import MongoDBClient
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ class Tournament:
         logger.debug("Creating Tournament instance: %s (%s)", name, tournament_id)
         self.tournament_id = tournament_id
         self.name = name
+        self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/tournaments/{self.tournament_id}_{self.name}")
         self.client = sofascore_client.SofascoreClient()
 
@@ -35,6 +37,16 @@ class Tournament:
             logger.info("Saving tournament seasons for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(seasons_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "tournament_seasons",
+                {
+                    "_id": self.tournament_id,
+                    "tournament_id": self.tournament_id,
+                    "tournament_name": self.name,
+                    "seasons": seasons_data
+                },
+                filter_fields=["_id"]
+            )
         logger.info("Retrieved %d seasons for tournament %s", len(seasons_data), self.name)
         return seasons_data
 
@@ -52,4 +64,17 @@ class Tournament:
             logger.info("Saving tournament stats for %s season %s to %s", self.name, season_name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "tournament_stats",
+                {
+                    "_id": f"{self.tournament_id}_{season_id}",
+                    "tournament_id": self.tournament_id,
+                    "tournament_name": self.name,
+                    "season_id": season_id,
+                    "season_name": season_name,
+                    "season_year": season_year,
+                    "stats": team_stats
+                },
+                filter_fields=["_id"]
+            )
         return team_stats

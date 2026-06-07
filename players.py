@@ -4,6 +4,7 @@ import urls
 import json
 import logging
 from utils.logging_config import setup_logging
+from utils.mongo_client import MongoDBClient
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ class Player:
         logger.debug("Creating Player instance: %s (%s)", name, player_id)
         self.player_id = player_id
         self.name = name
+        self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/players/{self.player_id}_{self.name}")
         self.client = sofascore_client.SofascoreClient()
 
@@ -25,6 +27,16 @@ class Player:
             logger.info("Saving player seasons for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(seasons_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "player_seasons",
+                {
+                    "_id": self.player_id,
+                    "player_id": self.player_id,
+                    "player_name": self.name,
+                    "seasons_data": seasons_data
+                },
+                filter_fields=["_id"]
+            )
             return seasons_data
         return self.client.get(url)
 
@@ -43,6 +55,21 @@ class Player:
             logger.info("Saving player season stats to %s", output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(player_stats, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "player_stats",
+                {
+                    "_id": f"{self.player_id}_{tournament_id}_{season_id}",
+                    "player_id": self.player_id,
+                    "player_name": self.name,
+                    "tournament_id": tournament_id,
+                    "tournament_name": tournament_name,
+                    "season_id": season_id,
+                    "season_name": season_name,
+                    "season_year": season_year,
+                    "stats": player_stats
+                },
+                filter_fields=["_id"]
+            )
         return player_stats
 
     def get_player_total_stats(self, store=False):
@@ -72,6 +99,16 @@ class Player:
             logger.info("Saving total stats for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(player_stats, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "player_total_stats",
+                {
+                    "_id": self.player_id,
+                    "player_id": self.player_id,
+                    "player_name": self.name,
+                    "total_stats": player_stats
+                },
+                filter_fields=["_id"]
+            )
 
         logger.info("Total stats fetched for %s", self.name)
         return player_stats

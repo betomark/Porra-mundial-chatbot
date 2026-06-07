@@ -7,6 +7,7 @@ import events
 import teams
 import players
 from utils.logging_config import setup_logging
+from utils.mongo_client import MongoDBClient
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -23,6 +24,8 @@ class gemini:
             logger.error("⚠️ GEMINI_MODEL environment variable not configured.")
             raise ValueError("⚠️ Configura la variable de entorno GEMINI_MODEL")
         self.client = genai.Client(api_key=self.api_key)
+        self.mongo = MongoDBClient()
+        self.data_dir = os.getenv("DATA_DIR", "data")
         logger.debug("Gemini class initialized successfully.")
 
     def _load_json(self, path):
@@ -42,6 +45,14 @@ class gemini:
                 return None
         logger.warning(f"File not found: {path}")
         return None
+
+    def _load_json_or_mongo(self, path, collection_name, query, data_key="data"):
+        logger.debug("Attempting to load from MongoDB collection %s with query %s", collection_name, query)
+        mongo_doc = self.mongo.find_one(collection_name, query)
+        if mongo_doc:
+            logger.info("Loaded document from MongoDB collection %s", collection_name)
+            return mongo_doc.get(data_key, mongo_doc)
+        return self._load_json(path)
     
     
     def build_match_context(self, event_id, team_a_id, team_b_id):
@@ -53,10 +64,20 @@ class gemini:
         context = {}
         
         # 1. Datos del evento (Cuotas, probabilidades iniciales, etc.)
-        context["event_odds"] = self._load_json(os.path.join(self.data_dir, "events", f"{event_id}.json"))
+        context["event_odds"] = self._load_json_or_mongo(
+            os.path.join(self.data_dir, "events", f"{event_id}.json"),
+            "events",
+            {"_id": event_id},
+            data_key="event_data"
+        )
         
         # 2. Rankings globales (Para ver el nivel base de cada uno)
-        context["power_rankings"] = self._load_json(os.path.join(self.data_dir, "power_rankings.json"))
+        context["power_rankings"] = self._load_json_or_mongo(
+            os.path.join(self.data_dir, "power_rankings.json"),
+            "power_rankings",
+            {"_id": "world_cup_2026_power_rankings"},
+            data_key="data"
+        )
         
         # 3. Datos específicos de los equipos involucrados
         for team_id, label in [(team_a_id, "team_A"), (team_b_id, "team_B")]:
@@ -64,6 +85,9 @@ class gemini:
             context[f"{label}_stats"] = self._load_json(os.path.join(team_path, "stats", f"{team_id}.json"))
             context[f"{label}_performance"] = self._load_json(os.path.join(team_path, "performance", f"{team_id}.json"))
             context[f"{label}_last_matches"] = self._load_json(os.path.join(team_path, "last_matches", f"{team_id}.json"))
+            team_doc = self.mongo.find_one("teams", {"_id": int(team_id) if str(team_id).isdigit() else team_id})
+            if team_doc:
+                context[f"{label}_summary"] = team_doc
             # Nota: Podrías añadir squad o stats de jugadores clave aquí si lo deseas
             
         logger.info(f"Match context built for event_id={event_id}")

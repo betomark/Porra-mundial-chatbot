@@ -4,6 +4,7 @@ from datafc.utils import sofascore_client
 import utils.folder_maker
 import urls
 from utils.logging_config import setup_logging
+from utils.mongo_client import MongoDBClient
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -24,6 +25,17 @@ def get_teams(standings_dict, store=False):
         logger.info("Storing team list to data/teams.json")
         with open("data/teams.json", "w", encoding="utf-8") as f:
             json.dump(datos_equipos, f, indent=4, ensure_ascii=False)
+        mongo = MongoDBClient()
+        for team_id, team_name in datos_equipos.items():
+            mongo.save_document(
+                "teams",
+                {
+                    "_id": team_id,
+                    "team_id": team_id,
+                    "team_name": team_name
+                },
+                filter_fields=["_id"]
+            )
     logger.info("Finished get_teams with %d teams", len(teams))
     return teams
 class Team:
@@ -33,6 +45,7 @@ class Team:
         self.name = name
         self.player_list = []
         self.client = sofascore_client.SofascoreClient()
+        self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/teams/{self.team_id}_{self.name}")
 
     def get_team_seasons(self, store=False):
@@ -63,6 +76,16 @@ class Team:
             logger.info("Saving seasons for %s to %sseasons.json", self.name, self.data_folder)
             with open(f"{self.data_folder}seasons.json", "w", encoding="utf-8") as f:
                 json.dump(seasons_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "team_seasons",
+                {
+                    "_id": self.team_id,
+                    "team_id": self.team_id,
+                    "team_name": self.name,
+                    "seasons_data": seasons_data
+                },
+                filter_fields=["_id"]
+            )
         logger.info("Retrieved %d tournaments for team %s", len(seasons_data), self.name)
         return seasons_data
 
@@ -84,6 +107,21 @@ class Team:
             logger.info("Saving team stats to %s", output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "team_stats",
+                {
+                    "_id": f"{self.team_id}_{tournament_id}_{season_id}",
+                    "team_id": self.team_id,
+                    "team_name": self.name,
+                    "tournament_id": tournament_id,
+                    "tournament_name": tournament_name,
+                    "season_id": season_id,
+                    "season_name": season_name,
+                    "season_year": season_year,
+                    "stats": team_stats["stats"]
+                },
+                filter_fields=["_id"]
+            )
         return team_stats
 
     def get_team_recent_performance(self, store=False):
@@ -95,6 +133,16 @@ class Team:
             logger.info("Saving recent performance for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(performance_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "team_performance",
+                {
+                    "_id": self.team_id,
+                    "team_id": self.team_id,
+                    "team_name": self.name,
+                    "performance_data": performance_data
+                },
+                filter_fields=["_id"]
+            )
             return performance_data
         return self.client.get(url)
 
@@ -107,6 +155,16 @@ class Team:
             logger.info("Saving last matches for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(matches_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "team_last_matches",
+                {
+                    "_id": self.team_id,
+                    "team_id": self.team_id,
+                    "team_name": self.name,
+                    "last_matches": matches_data
+                },
+                filter_fields=["_id"]
+            )
             return matches_data
         return self.client.get(url)
 
@@ -120,6 +178,16 @@ class Team:
             logger.info("Saving squad for %s to %s", self.name, output_path)
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(squad_data, f, indent=4, ensure_ascii=False)
+            self.mongo.save_document(
+                "team_squad",
+                {
+                    "_id": self.team_id,
+                    "team_id": self.team_id,
+                    "team_name": self.name,
+                    "squad": squad_data.get("players", [])
+                },
+                filter_fields=["_id"]
+            )
         for player in squad_data["players"]:
             player_list.append(players.Player(player['player']["id"], player['player']["name"]))
         self.player_list = player_list

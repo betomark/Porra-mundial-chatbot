@@ -1,8 +1,10 @@
 import json
 import time
 from selenium import webdriver
+import players
 import teams
 import events
+import utils.sofascore_client
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
@@ -13,7 +15,7 @@ driver = webdriver.Chrome(options=options)
 
 # Aquí guardaremos todas las respuestas de la API
 # La clave será la URL y el valor será el diccionario con los datos
-
+team_list = []
 try:
     print("🌐 Cargando Sofascore...")
     driver.get("https://www.sofascore.com/es/football/tournament/world/world-championship/16#id:58210")
@@ -55,7 +57,8 @@ try:
                         with open("data/standings.json", "w", encoding="utf-8") as f:
                             json.dump(datos_diccionario, f, indent=4, ensure_ascii=False)
                         print("📋 Extrayendo datos de equipos para facilitar búsquedas futuras...")
-                        teams.get_teams(datos_diccionario)
+                        team_list = teams.get_teams(datos_diccionario, store=True)
+                        print(f"👥 Equipos extraídos: {[team.name for team in team_list]}")
                     elif "powerRankings" in claves:
                         print("📈 Guardando ranking de poder...")
                         with open("data/power_rankings.json", "w", encoding="utf-8") as f:
@@ -73,13 +76,32 @@ try:
                             with open(nombre_archivo, "w", encoding="utf-8") as f:
                                 json.dump(evento_limpio, f, indent=4, ensure_ascii=False)
                     
-                except Exception:
+                        
+                except Exception as e:
                     # Algunas peticiones (como respuestas 204 o pendientes) no tienen contenido y darán error aquí.
                     # Las ignoramos de forma segura.
-                    pass
+                    print(f"⚠️ No se pudo obtener el cuerpo de la respuesta para {url}: {e}")
 
 except Exception as e:
     print(f"❌ Ocurrió un error general: {e}")
 
-
+for team in team_list:
+    print(f"📊 Obteniendo estadísticas recientes para {team.name}...")
+    team.get_team_recent_performance(store=True)
+    print(f"📋 Obteniendo últimos partidos para {team.name}...")
+    team.get_team_last_matches(store=True)
+    print(f"👥 Obteniendo plantilla de {team.name}...")
+    squad = team.get_team_squad(store=True)
+    team_seasons = team.get_team_seasons(store=True)
+    for tournament_name, tournament_data in team_seasons.items():
+        tournament_id = tournament_data["tournament_id"]
+        for season in tournament_data["seasons"]:
+            season_id = season["season_id"]
+            season_year = season["season_year"]
+            print(f"📈 Obteniendo estadísticas para {team.name} en {tournament_name} - {season['season_name']}...")
+            team.get_team_stats(tournament_id, tournament_name, season_id, season['season_name'], season_year, store=True)
+    for player in squad:
+        print(f"👤 Obteniendo estadísticas para el jugador {player.name}...")
+        player_obj = players.Player(player.player_id, player.name)
+        player_obj.get_player_total_stats(store=True)
 

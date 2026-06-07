@@ -20,8 +20,13 @@ class MongoDBClient:
             uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
             db_name = os.getenv("MONGO_DB_NAME", "porra_db")
             logger.info("Connecting to MongoDB at %s using database %s", uri, db_name)
-            cls._instance.client = MongoClient(uri)
+            cls._instance.client = MongoClient(uri, serverSelectionTimeoutMS=5000)
             cls._instance.db = cls._instance.client[db_name]
+            try:
+                cls._instance.client.admin.command("ping")
+                logger.info("MongoDB connection successful")
+            except Exception as e:
+                logger.error("MongoDB connection failed: %s", e)
         else:
             logger.debug("Reusing existing MongoDBClient singleton instance.")
         return cls._instance

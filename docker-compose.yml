@@ -13,3 +13,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  app:
+    build: .
+    container_name: porra_app
+    working_dir: /usr/src/app
+    env_file:
+      - .env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+      - MONGO_DB_NAME=porra_db
+      - HEADLESS=true
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - .:/usr/src/app
+    restart: "no"
+    command: ["python", "main.py", "extract", "--headless"]
+
+volumes:
+  mongo_data:
+    name: porra_mongo_data

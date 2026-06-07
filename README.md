@@ -22,6 +22,7 @@ This project is a Python-based chatbot designed to interact with users about the
 *   `tournaments.py`: Manages tournament data.
 *   `urls.py`: Potentially defines API endpoints or routes (if this is a web application).
 *   `world_cup_extractor.py`: Script for extracting World Cup-related data from external sources.
+*   `main.py`: Entry point for running extraction and prediction workflows.
 *   `data/`: Directory for storing JSON data (e.g., scheduled events, power rankings, team data).
 *   `utils/`: Contains utility scripts:
     *   `folder_maker.py`: Utility for creating folders.
@@ -48,13 +49,20 @@ This project is a Python-based chatbot designed to interact with users about the
     Copy the `.env-template` file to `.env` and fill in your Google Gemini API key and any other necessary configurations.
     ```bash
     cp .env-template .env
-    # Open .env and add your GOOGLE_API_KEY and other settings
+    # Open .env and add your GEMINI_API_KEY and other settings
     ```
 3.  **Build and run the services:**
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
-    This will start the Python application and a MongoDB instance.
+    This will start MongoDB and build the Python app container. The default app command runs the World Cup extraction workflow in headless mode and will stop once the extraction finishes.
+
+4.  **Run containerized tasks manually:**
+    ```bash
+    docker compose run --rm app python main.py extract --headless
+    docker compose run --rm app python main.py predict <event_id> <team_a_id> <team_b_id>
+    docker compose run --rm app python main.py show-collections
+    ```
 
 ### Manual Installation (Without Docker)
 
@@ -94,10 +102,18 @@ This project is a Python-based chatbot designed to interact with users about the
 
 ## Usage
 
-(Further instructions on how to run the chatbot or specific scripts will go here.)
-For example:
+Use the `main.py` entry point for the extractor and prediction workflows.
+
+Examples:
 ```bash
-python main.py
+python main.py extract --headless
+python main.py predict <event_id> <team_a_id> <team_b_id>
+python main.py show-collections
+```
+
+If you are using Docker Compose, run:
+```bash
+docker compose run --rm app python main.py extract --headless
 ```
 
 ## Contributing

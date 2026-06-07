@@ -10,6 +10,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 class MongoDBClient:
+    """Singleton wrapper for MongoDB connection and CRUD operations."""
     _instance = None
 
     def __new__(cls):
@@ -33,10 +34,12 @@ class MongoDBClient:
 
     @property
     def database(self):
+        """Return the configured MongoDB database instance."""
         logger.debug("Accessing MongoDB database property.")
         return self.db
 
     def get_collection(self, collection_name):
+        """Return a MongoDB collection by name."""
         logger.debug("Retrieving MongoDB collection: %s", collection_name)
         return self.database[collection_name]
 
@@ -78,17 +81,20 @@ class MongoDBClient:
             return result
 
     def find_one(self, collection_name, query, projection=None):
+        """Find a single document in the specified MongoDB collection."""
         logger.debug("Finding one document in %s with query=%s", collection_name, query)
         collection = self.get_collection(collection_name)
         return collection.find_one(query, projection)
 
     def find_many(self, collection_name, query=None, projection=None, limit=100):
+        """Find documents in the specified MongoDB collection using an optional query."""
         query = query or {}
         logger.debug("Finding many documents in %s with query=%s limit=%s", collection_name, query, limit)
         collection = self.get_collection(collection_name)
         return list(collection.find(query, projection).limit(limit))
 
     def replace_document(self, collection_name, filter_query, document, upsert=False):
+        """Replace a MongoDB document matching the provided filter query."""
         logger.debug("Replacing document in %s matching %s", collection_name, filter_query)
         collection = self.get_collection(collection_name)
         result = collection.replace_one(filter_query, document, upsert=upsert)

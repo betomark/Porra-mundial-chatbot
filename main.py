@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_extraction(headless=False):
+    """Trigger the World Cup data extraction workflow."""
     if headless:
         os.environ["HEADLESS"] = "true"
     from porra import world_cup_extractor
@@ -15,6 +16,7 @@ def run_extraction(headless=False):
 
 
 def run_prediction(event_id, team_a_id, team_b_id, api_key=None, model=None):
+    """Run a prediction request using the configured Gemini model."""
     if api_key:
         os.environ["GEMINI_API_KEY"] = api_key
     if model:
@@ -27,6 +29,7 @@ def run_prediction(event_id, team_a_id, team_b_id, api_key=None, model=None):
 
 
 def list_collections():
+    """Log and print the MongoDB collection names in the configured database."""
     from utils.mongo_client import MongoDBClient
     client = MongoDBClient()
     collections = client.database.list_collection_names()
@@ -36,6 +39,7 @@ def list_collections():
 
 
 def main():
+    """Parse CLI arguments and dispatch extraction or prediction commands."""
     parser = argparse.ArgumentParser(
         description="Porra Mundial Chatbot CLI for extraction and prediction tasks."
     )

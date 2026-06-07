@@ -15,6 +15,7 @@ mongo = MongoDBClient()
 
 
 class PredictRequest(BaseModel):
+    """Request schema for prediction API calls."""
     event_id: str
     team_a_id: str
     team_b_id: str
@@ -23,11 +24,13 @@ class PredictRequest(BaseModel):
 
 
 class ExtractRequest(BaseModel):
+    """Request schema for extractor API calls."""
     headless: bool = True
 
 
 @app.get("/health")
 def health():
+    """Return the application health and MongoDB connectivity status."""
     try:
         mongo.client.admin.command("ping")
         return {"status": "ok", "mongo": True}
@@ -37,11 +40,13 @@ def health():
 
 @app.get("/collections")
 def list_collections():
+    """Return the list of MongoDB collections in the configured database."""
     collections = mongo.database.list_collection_names()
     return {"collections": collections}
 
 
 def serialize_document(document: dict) -> dict:
+    """Serialize MongoDB document IDs into JSON-safe strings."""
     if "_id" in document:
         try:
             document["_id"] = str(document["_id"])
@@ -57,6 +62,7 @@ def get_documents(
     value: str | None = Query(None, description="Optional field value to filter by"),
     limit: int = Query(50, ge=1, le=1000, description="Maximum number of documents to return")
 ):
+    """Return documents from a MongoDB collection, optionally filtered by field."""
     if field is not None and value is None:
         raise HTTPException(status_code=400, detail="A value is required when filtering by field")
 
@@ -74,6 +80,7 @@ def get_documents(
 
 @app.post("/extract")
 def extract(request: ExtractRequest, background_tasks: BackgroundTasks):
+    """Queue the extraction pipeline in a background task."""
     os.environ["HEADLESS"] = "true" if request.headless else "false"
     background_tasks.add_task(run_extractor)
     return {"status": "queued", "headless": request.headless}
@@ -81,6 +88,7 @@ def extract(request: ExtractRequest, background_tasks: BackgroundTasks):
 
 @app.post("/predict")
 def predict(request: PredictRequest):
+    """Generate a match prediction using the Gemini predictor."""
     if request.api_key:
         # Override only for this request
         predictor = Gemini(api_key=request.api_key, model=request.model)

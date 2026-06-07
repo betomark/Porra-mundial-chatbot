@@ -10,7 +10,9 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 class HuggingFaceLLMClient:
+    """Wrapper around a HuggingFace causal LLM with 4-bit quantization support."""
     def __init__(self):
+        """Initialize the HuggingFace LLM client and load the tokenizer and model."""
         logger.debug("Initializing HuggingFaceLLMClient.")
         # Use a strong 8B instruction-optimized model
         # Note: For Meta (Llama) models, you may need to accept terms on the HF website

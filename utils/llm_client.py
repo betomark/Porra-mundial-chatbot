@@ -9,7 +9,9 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 class LLMClient:
+    """Wrapper for local or cloud LLM providers used by the application."""
     def __init__(self):
+        """Initialize the configured LLM provider client."""
         logger.debug("Initializing LLMClient.")
         self.provider = os.getenv("LLM_PROVIDER", "local").lower()
         logger.info("Selected LLM provider: %s", self.provider)

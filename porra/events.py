@@ -1,5 +1,5 @@
 from porra import urls
-import utils.sofascore_client
+from datafc.utils import SofascoreClient
 import json
 import logging
 from scipy.stats import poisson
@@ -54,7 +54,7 @@ def clean_past_event(evento):
 def get_odds(event_id):
     """Fetch betting odds for a specific event from SofaScore."""
     url = urls.MATCH_ODDS.format(event_id=event_id)
-    sofascore_client = utils.sofascore_client.SofascoreClient()
+    sofascore_client = SofascoreClient()
     logger.info("Obteniendo cuotas para el evento %s desde %s", event_id, url)
     result = sofascore_client.get(url)
     logger.info("Cuotas obtenidas para el evento %s", event_id)

@@ -4,7 +4,7 @@ import time
 import logging
 from selenium import webdriver
 from porra import players, teams, events
-from datafc.utils import sofascore_client
+from datafc.utils import SofascoreClient
 from utils.logging_config import setup_logging
 from utils.mongo_client import MongoDBClient
 from utils.persistence import persist

@@ -1,6 +1,6 @@
 import json
 import logging
-from datafc.utils import sofascore_client
+from datafc.utils import SofascoreClient
 import utils.folder_maker
 from porra import urls
 from utils.logging_config import setup_logging
@@ -47,7 +47,7 @@ class Team:
         self.team_id = team_id
         self.name = name
         self.player_list = []
-        self.client = sofascore_client.SofascoreClient()
+        self.client = SofascoreClient()
         self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/teams/{self.team_id}_{self.name}")
 

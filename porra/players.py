@@ -1,4 +1,4 @@
-from datafc.utils import sofascore_client
+from datafc.utils import SofascoreClient
 import utils.folder_maker
 from porra import urls
 import json
@@ -20,7 +20,7 @@ class Player:
         self.name = name
         self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/players/{self.player_id}_{self.name}")
-        self.client = sofascore_client.SofascoreClient()
+        self.client = SofascoreClient()
 
     def get_player_seasons(self, store=False):
         """Fetch season information for the player from SofaScore."""

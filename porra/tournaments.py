@@ -1,6 +1,6 @@
 import json
 import logging
-from datafc.utils import sofascore_client
+from datafc.utils import SofascoreClient
 import utils.folder_maker
 from porra import urls
 from utils.logging_config import setup_logging
@@ -19,7 +19,7 @@ class Tournament:
         self.name = name
         self.mongo = MongoDBClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/tournaments/{self.tournament_id}_{self.name}")
-        self.client = sofascore_client.SofascoreClient()
+        self.client = SofascoreClient()
 
     def get_tournament_seasons(self, store=False):
         """Fetch and optionally persist tournament season metadata."""

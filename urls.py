@@ -3,6 +3,8 @@ SOFASCORE_BASE_URL = "https://www.sofascore.com/api/v1"
 #tournament endpoints
 STANDINGS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/standings/total"
 EVENTS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/scheduled-events/{{date}}"
+POWER_RANKINGS_ROUNDS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/power-rankings/rounds"
+TEAMS_POWER_RANKINGS_ROUNDS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/power-rankings/round/{{round}}"
 
 #match endpoints
 MATCH_ODDS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/odds/1/all"

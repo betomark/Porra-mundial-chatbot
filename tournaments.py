@@ -47,8 +47,18 @@ class Tournament:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
         return team_stats
     
-    def get_tournament_season_standings(self, season_id=None):
-        pass
+    def get_tournament_season_standings(self, season_id=None, store=False):
+        url = urls.STANDINGS.format(tournament_id=self.tournament_id, season_id=season_id)
+        try:
+            print(f"Obteniendo standings para el torneo {self.name} - temporada {season_id}...")
+            response = self.client.get(url)
+            if store:
+                with open(f"{self.data_folder}standings_{season_id}.json", "w", encoding="utf-8") as f:
+                    json.dump(response, f, indent=4, ensure_ascii=False)
+            return response
+        except:
+            print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} ")
+            return None
 
     def get_tournament_season_teams(self, season_id=None):
         pass
@@ -64,9 +74,22 @@ class Tournament:
 
     def get_power_ranking_rounds(self, season_id):
         url = urls.POWER_RANKINGS_ROUNDS.format(tournament_id=self.tournament_id, season_id=season_id)
-        print(url)
         try:
+            print(f"Obteniendo rondas de power ranking para el torneo {self.name} - temporada {season_id}...")
             return self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} ")
+            return None
+        
+    def get_teams_power_ranking(self, season_id, round_id, store=False):
+        url = urls.TEAMS_POWER_RANKINGS_ROUNDS.format(tournament_id=self.tournament_id, season_id=season_id, round=round_id)
+        try:
+            print(f"Obteniendo ranking de poder para el torneo {self.name} - temporada {season_id} - ronda {round_id}...")
+            response = self.client.get(url)
+            if store:
+                with open(f"{self.data_folder}power_ranking_round_{round_id}.json", "w", encoding="utf-8") as f:
+                    json.dump(response, f, indent=4, ensure_ascii=False)
+            return response
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} ")
             return None

@@ -40,15 +40,6 @@ def clean_past_event(evento):
     #TODO: añadir más campos relevantes de eventos pasados, como goleadores, tarjetas, etc.
     return evento_limpio
 
-
-def get_odds(event_id):
-    url = urls.MATCH_ODDS.format(event_id=event_id)
-    sofascore_client = SofascoreClient()
-    print(f"Obteniendo cuotas para el evento {event_id} desde {url}...")
-    
-    return sofascore_client.get(url)
-
-
 class Event:
     def __init__(self, event_id, equipo_local, equipo_visitante):
         self.event_id = event_id
@@ -82,6 +73,7 @@ class Event:
     
     def get_event_stats(self):
         url = urls.MATCH_STATS.format(event_id=self.event_id)
+        print(f"Obteniendo estadísticas para el evento {self.event_id} desde {url}...")
         try:
             event_stats = self.client.get(url)
         except:
@@ -91,6 +83,7 @@ class Event:
     
     def get_event_lineups(self):
         url = urls.MATCH_LINEUPS.format(event_id=self.event_id)
+        print(f"Obteniendo alineaciones para el evento {self.event_id} desde {url}...")
         try:
             lineups = self.client.get(url)
         except:
@@ -100,12 +93,23 @@ class Event:
     
     def get_event_votes(self):
         url = urls.MATCH_VOTES.format(event_id=self.event_id)
+        print(f"Obteniendo votaciones para el evento {self.event_id} desde {url}...")
         try:
             votes = self.client.get(url)
         except:
             print(f"⚠️ No se pudieron obtener las votaciones para el evento {self.event_id}")
             votes = None
         return votes
+    
+    def get_odds(self):
+        url = urls.MATCH_ODDS.format(event_id=self.event_id)
+        print(f"Obteniendo cuotas para el evento {self.event_id} desde {url}...")
+        try:
+            odds_data = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las cuotas para el evento {self.event_id}")
+            odds_data = None
+        return odds_data
 
     def calcular_probabilidades_poisson(self, xg_local, xg_visitante):
         """

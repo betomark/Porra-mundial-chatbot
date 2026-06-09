@@ -4,7 +4,7 @@ from selenium import webdriver
 import players
 import teams
 import events
-import utils.sofascore_client
+
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)

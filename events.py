@@ -1,5 +1,5 @@
 import urls
-import utils.sofascore_client
+from datafc.utils import SofascoreClient
 import json
 from scipy.stats import poisson
 
@@ -43,7 +43,7 @@ def clean_past_event(evento):
 
 def get_odds(event_id):
     url = urls.MATCH_ODDS.format(event_id=event_id)
-    sofascore_client = utils.sofascore_client.SofascoreClient()
+    sofascore_client = SofascoreClient()
     print(f"Obteniendo cuotas para el evento {event_id} desde {url}...")
     
     return sofascore_client.get(url)

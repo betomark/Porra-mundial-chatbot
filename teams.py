@@ -1,5 +1,5 @@
 import json
-from datafc.utils import sofascore_client
+from datafc.utils import SofascoreClient
 import utils.folder_maker
 import urls
 import players
@@ -23,7 +23,7 @@ class Team:
         self.team_id = team_id
         self.name = name
         self.player_list = []
-        self.client = sofascore_client.SofascoreClient()
+        self.client = SofascoreClient()
         self.data_folder = utils.folder_maker.create_data_folders(f"data/teams/{self.team_id}_{self.name}")
 
     def get_team_seasons(self, store=False):

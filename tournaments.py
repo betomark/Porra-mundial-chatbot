@@ -46,3 +46,27 @@ class Tournament:
             with open(f"{self.data_folder}season_{season_id}_{season_name.replace('/', '-')}.json", "w", encoding="utf-8") as f:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
         return team_stats
+    
+    def get_tournament_season_standings(self, season_id=None):
+        pass
+
+    def get_tournament_season_teams(self, season_id=None):
+        pass
+
+    def get_tournament_season_upcoming_events(self, season_id=None):
+        pass
+
+    def get_tournament_season_past_events(self, season_id=None):
+        pass
+
+    def get_tournament_season_events(self, season_id):
+        pass
+
+    def get_power_ranking_rounds(self, season_id):
+        url = urls.POWER_RANKINGS_ROUNDS.format(tournament_id=self.tournament_id, season_id=season_id)
+        print(url)
+        try:
+            return self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} ")
+            return None

@@ -29,6 +29,9 @@ def create_chrome_driver():
     if os.getenv("HEADLESS", "false").lower() in ("1", "true", "yes"):
         options.add_argument("--headless=new")
 
+    # Enable performance logging so `driver.get_log("performance")` works
+    options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
+
     return webdriver.Chrome(options=options)
 
 
@@ -36,7 +39,7 @@ def run_extractor():
     """Execute the full World Cup extraction workflow and persist extracted data."""
     logger.info("🚀 Starting browser...")
     driver = create_chrome_driver()
-    mongo = MongoDBClient()
+    # mongo = MongoDBClient()
     team_list = []
 
     try:
@@ -50,10 +53,9 @@ def run_extractor():
         time.sleep(2)
         logger.info("🔍 Inspecting network traffic and extracting data...")
         logs_raw = driver.get_log("performance")
-
         for entry in logs_raw:
             log = json.loads(entry["message"])["message"]
-
+            print(log)
             # This time we look for "Network.responseReceived" (when the response has already arrived in the browser)
             if log["method"] == "Network.responseReceived":
                 params = log["params"]

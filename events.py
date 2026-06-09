@@ -54,6 +54,7 @@ class Event:
         self.event_id = event_id
         self.equipo_local = equipo_local
         self.equipo_visitante = equipo_visitante
+        self.client = SofascoreClient()
         self.max_goles = 7 # Límite superior razonable para calcular probabilidades
 
     def _fraction_to_decimal(self, frac_str):
@@ -78,6 +79,33 @@ class Event:
                     frac_val = choice.get("fractionalValue")
                     cuotas_procesadas[name] = self._fraction_to_decimal(frac_val)
         return cuotas_procesadas
+    
+    def get_event_stats(self):
+        url = urls.MATCH_STATS.format(event_id=self.event_id)
+        try:
+            event_stats = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las estadísticas para el evento {self.event_id}")
+            event_stats = None
+        return event_stats
+    
+    def get_event_lineups(self):
+        url = urls.MATCH_LINEUPS.format(event_id=self.event_id)
+        try:
+            lineups = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las alineaciones para el evento {self.event_id}")
+            lineups = None
+        return lineups
+    
+    def get_event_votes(self):
+        url = urls.MATCH_VOTES.format(event_id=self.event_id)
+        try:
+            votes = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las votaciones para el evento {self.event_id}")
+            votes = None
+        return votes
 
     def calcular_probabilidades_poisson(self, xg_local, xg_visitante):
         """

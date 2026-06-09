@@ -3,6 +3,7 @@ from datafc.utils._client import SofascoreClient
 import utils.folder_maker
 import urls
 import players
+import events
 
 def get_teams(standings_dict, store=False):
     datos_equipos = {}
@@ -60,7 +61,7 @@ class Team:
             return seasons_data
         return seasons_data
 
-    def get_team_stats(self, tournament_id, tournament_name, season_id, season_name, season_year, store=False):
+    def get_team_stats(self, tournament_id, tournament_name, season_id, season_name, season_year, store=False, clean=False):
         url = urls.TEAM_STATS.format(team_id=self.team_id, tournament_id=tournament_id, season_id=season_id)
         print(f"Obteniendo estadísticas para {self.name} en {tournament_name} - {season_name} ({season_year})")
         team_stats = {"tournament_id": tournament_id, "tournament_name": tournament_name, "season_id": season_id, "season_name": season_name, "season_year": season_year, "stats": {}}
@@ -76,7 +77,7 @@ class Team:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
         return team_stats
 
-    def get_team_recent_performance(self, store=False):
+    def get_team_recent_performance(self, store=False, clean=False):
         url = urls.TEAM_RECENT_PERFORMANCE.format(team_id=self.team_id)
         try:
             print(f"Obteniendo estadísticas de rendimiento reciente para {self.name}")
@@ -90,11 +91,13 @@ class Team:
                 json.dump(performance_data, f, indent=4, ensure_ascii=False)
         return performance_data
 
-    def get_team_last_matches(self, store=False):
+    def get_team_last_matches(self, store=False, clean=False):
         url = urls.TEAM_LASTS_MATCHES.format(team_id=self.team_id)
         try:
             print(f"Obteniendo últimos partidos para {self.name}")
             matches_data = self.client.get(url)
+            if clean:
+                matches_data = [events.clean_past_event(match) for match in matches_data]
         except:
             print(f"⚠️ No se pudieron obtener los últimos partidos para {self.name}")
             return None
@@ -103,7 +106,7 @@ class Team:
                 json.dump(matches_data, f, indent=4, ensure_ascii=False)
         return matches_data
 
-    def get_team_squad(self, store=False):
+    def get_team_squad(self, store=False, clean=False):
         url = urls.SQUAD.format(team_id=self.team_id)
         player_list = []
         try:

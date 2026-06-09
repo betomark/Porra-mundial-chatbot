@@ -28,7 +28,12 @@ class Team:
 
     def get_team_seasons(self, store=False):
         url = urls.TEAM_SEASONS.format(team_id=self.team_id)
-        response = self.client.get(url)
+        try:
+            print(f"Obteniendo temporadas para {self.name}")
+            response = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las temporadas para {self.name}")
+            return None
         seasons_data = {}
         for tournament in response["uniqueTournamentSeasons"]:
             tournament_name = tournament["uniqueTournament"]["name"]
@@ -57,7 +62,7 @@ class Team:
 
     def get_team_stats(self, tournament_id, tournament_name, season_id, season_name, season_year, store=False):
         url = urls.TEAM_STATS.format(team_id=self.team_id, tournament_id=tournament_id, season_id=season_id)
-        
+        print(f"Obteniendo estadísticas para {self.name} en {tournament_name} - {season_name} ({season_year})")
         team_stats = {"tournament_id": tournament_id, "tournament_name": tournament_name, "season_id": season_id, "season_name": season_name, "season_year": season_year, "stats": {}}
         try:
             response = self.client.get(url)
@@ -73,26 +78,40 @@ class Team:
 
     def get_team_recent_performance(self, store=False):
         url = urls.TEAM_RECENT_PERFORMANCE.format(team_id=self.team_id)
+        try:
+            print(f"Obteniendo estadísticas de rendimiento reciente para {self.name}")
+            performance_data = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las estadísticas de rendimiento reciente para {self.name}")
+            return None
         if store:
             performance_data = self.client.get(url)
             with open(f"{self.data_folder}performance.json", "w", encoding="utf-8") as f:
                 json.dump(performance_data, f, indent=4, ensure_ascii=False)
-            return performance_data
-        return self.client.get(url)
+        return performance_data
 
     def get_team_last_matches(self, store=False):
         url = urls.TEAM_LASTS_MATCHES.format(team_id=self.team_id)
-        if store:
+        try:
+            print(f"Obteniendo últimos partidos para {self.name}")
             matches_data = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener los últimos partidos para {self.name}")
+            return None
+        if store:
             with open(f"{self.data_folder}last_matches.json", "w", encoding="utf-8") as f:
                 json.dump(matches_data, f, indent=4, ensure_ascii=False)
-            return matches_data
-        return self.client.get(url)
+        return matches_data
 
     def get_team_squad(self, store=False):
         url = urls.SQUAD.format(team_id=self.team_id)
         player_list = []
-        squad_data = self.client.get(url)
+        try:
+            print(f"Obteniendo plantilla para {self.name}")
+            squad_data = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las plantillas para {self.name}")
+            return None
         if store:
             with open(f"{self.data_folder}squad.json", "w", encoding="utf-8") as f:
                 json.dump(squad_data, f, indent=4, ensure_ascii=False)
@@ -107,6 +126,7 @@ class Team:
         for player in squad_data["players"]:
             player_id = player["id"]
             player_name = player["name"]
+            print(f"Obteniendo estadísticas para {player_name}")
             player_stats = players.Player(player_id).get_player_total_stats()
             squad_context[player_name] = {
                 "player_id": player_id,

@@ -76,6 +76,21 @@ class Team:
             with open(f"{self.data_folder}tournament_{tournament_id}_{tournament_name}_season_{season_id}_{season_name.replace('/', '-')}.json", "w", encoding="utf-8") as f:
                 json.dump(team_stats, f, indent=4, ensure_ascii=False)
         return team_stats
+    
+    def get_team_summary_stats_by_year(self, year, merged=False, store=False):
+        summary_stats = {}
+        if self.player_list == []:
+            self.get_team_squad()
+        player_stats_list = {player.name: player.get_player_stats_summary_by_year(year) for player in self.player_list}
+        if merged:
+            summary_stats = players.merge_player_summary_stats_by_year(list(player_stats_list.values()))  # Función que itera por cada jugador, obtiene sus estadísticas resumidas para el año dado y las combina en un solo diccionario sumando valores numéricos y promediando porcentajes.
+        else:
+            summary_stats = player_stats_list
+
+        if store:
+            with open(f"{self.data_folder}summary_stats_year_{year}_merged_{merged}.json", "w", encoding="utf-8") as f:
+                json.dump(summary_stats, f, indent=4, ensure_ascii=False)
+        return summary_stats
 
     def get_team_recent_performance(self, store=False, clean=False):
         url = urls.TEAM_RECENT_PERFORMANCE.format(team_id=self.team_id)

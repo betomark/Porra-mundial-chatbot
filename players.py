@@ -1,4 +1,4 @@
-from datafc.utils import SofascoreClient
+from datafc.utils._client import SofascoreClient
 import utils.folder_maker
 import urls
 import json

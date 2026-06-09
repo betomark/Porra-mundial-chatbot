@@ -1,5 +1,5 @@
 import urls
-from datafc.utils import SofascoreClient
+from datafc.utils._client import SofascoreClient
 import json
 from scipy.stats import poisson
 

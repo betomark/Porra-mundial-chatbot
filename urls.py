@@ -6,7 +6,9 @@ EVENTS = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/scheduled-ev
 
 #match endpoints
 MATCH_ODDS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/odds/1/all"
-
+MATCH_LINEUPS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/lineups"
+MATCH_VOTES = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/votes"
+MATCH_STATS = f"{SOFASCORE_BASE_URL}/event/{{event_id}}/statistics"
 RANKING = f"{SOFASCORE_BASE_URL}/unique-tournament/{{tournament_id}}/season/{{season_id}}/power-rankings/round/{{round_id}}"
 
 #team endpoints

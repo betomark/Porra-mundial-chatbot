@@ -71,7 +71,7 @@ class Event:
                     cuotas_procesadas[name] = self._fraction_to_decimal(frac_val)
         return cuotas_procesadas
     
-    def get_event_stats(self):
+    def get_event_stats(self, store=False, clean=False):
         url = urls.MATCH_STATS.format(event_id=self.event_id)
         print(f"Obteniendo estadísticas para el evento {self.event_id} desde {url}...")
         try:

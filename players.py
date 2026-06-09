@@ -7,26 +7,31 @@ class Player:
     def __init__(self, player_id, name):
         self.player_id = player_id
         self.name = name
+        self.teams = []  # Lista de equipos en los que ha jugado el jugador, con formato {"team_id": ..., "team_name": ..., "tournament_id": ..., "tournament_name": ..., "season_id": ..., "season_name": ...}
         self.data_folder = utils.folder_maker.create_data_folders(f"data/players/{self.player_id}_{self.name}")
         self.client = SofascoreClient()
 
     def get_player_seasons(self, store=False):
         url = urls.PLAYER_SEASONS.format(player_id=self.player_id)
-        if store:
+        try:
+            print(f"Obteniendo temporadas para el jugador {self.name}...")
             seasons_data = self.client.get(url)
+        except:
+            print(f"⚠️ No se pudieron obtener las temporadas para el jugador {self.name}")
+            return None
+        if store:
             with open(f"{self.data_folder}seasons.json", "w", encoding="utf-8") as f:
                 json.dump(seasons_data, f, indent=4, ensure_ascii=False)
-            return seasons_data
-        return self.client.get(url)
+        return seasons_data
 
     def get_player_season_stats(self, tournament_id, tournament_name, season_id, season_name, store=False):
         url = urls.PLAYER_SEASON_STATS.format(player_id=self.player_id, tournament_id=tournament_id, season_id=season_id)
         try:
+            print(f"Obteniendo estadísticas para el jugador {self.name} en {tournament_name} - {season_name}...")
             player_stats = self.client.get(url)
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} en {tournament_name} - {season_name}")
-            player_stats = None
-            store = False  # No tiene sentido guardar un archivo sin datos, así que desactivamos el guardado en caso de error
+            return None
         if store:
             with open(f"{self.data_folder}tournament_{tournament_id}_{tournament_name}_season_{season_id}_{season_name.replace('/', '-')}.json", "w", encoding="utf-8") as f:
                 json.dump(player_stats, f, indent=4, ensure_ascii=False)
@@ -56,7 +61,6 @@ class Player:
         if store:
             with open(f"{self.data_folder}total_stats.json", "w", encoding="utf-8") as f:
                 json.dump(player_stats, f, indent=4, ensure_ascii=False)
-
         return player_stats
     
     def get_player_context(self):

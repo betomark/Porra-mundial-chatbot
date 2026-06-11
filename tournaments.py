@@ -2,6 +2,7 @@ import json
 from datafc.utils._client import SofascoreClient
 import utils.folder_maker
 import urls
+from utils.scraper import capturar_json_directo
 
 class Tournament:
     def __init__(self, tournament_id, name, season_id=None, season_name=None):
@@ -16,7 +17,7 @@ class Tournament:
         url = urls.TOURNAMENT_SEASONS.format(tournament_id=self.tournament_id)
         try:
             print(f"Obteniendo temporadas para el torneo {self.name}")
-            response = self.client.get(url)
+            response = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las temporadas para {self.name}")
             return None
@@ -38,7 +39,7 @@ class Tournament:
         url = urls.TOURNAMENT_STATS.format(tournament_id=self.tournament_id, season_id=season_id)
         try:
             print(f"Obteniendo estadísticas para el torneo {self.name} - {season_name}...")
-            team_stats = self.client.get(url)
+            team_stats = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} - {season_name}")
             return None
@@ -51,7 +52,7 @@ class Tournament:
         url = urls.STANDINGS.format(tournament_id=self.tournament_id, season_id=season_id)
         try:
             print(f"Obteniendo standings para el torneo {self.name} - temporada {season_id}...")
-            response = self.client.get(url)
+            response = capturar_json_directo(url)
             if store:
                 with open(f"{self.data_folder}standings_{season_id}.json", "w", encoding="utf-8") as f:
                     json.dump(response, f, indent=4, ensure_ascii=False)
@@ -76,7 +77,7 @@ class Tournament:
         url = urls.POWER_RANKINGS_ROUNDS.format(tournament_id=self.tournament_id, season_id=season_id)
         try:
             print(f"Obteniendo rondas de power ranking para el torneo {self.name} - temporada {season_id}...")
-            return self.client.get(url)
+            return capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} ")
             return None
@@ -85,7 +86,7 @@ class Tournament:
         url = urls.TEAMS_POWER_RANKINGS_ROUNDS.format(tournament_id=self.tournament_id, season_id=season_id, round=round_id)
         try:
             print(f"Obteniendo ranking de poder para el torneo {self.name} - temporada {season_id} - ronda {round_id}...")
-            response = self.client.get(url)
+            response = capturar_json_directo(url)
             if store:
                 with open(f"{self.data_folder}power_ranking_round_{round_id}.json", "w", encoding="utf-8") as f:
                     json.dump(response, f, indent=4, ensure_ascii=False)

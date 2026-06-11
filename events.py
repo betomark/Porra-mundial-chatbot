@@ -2,6 +2,7 @@ import urls
 from datafc.utils._client import SofascoreClient
 import json
 from scipy.stats import poisson
+from utils.scraper import capturar_json_directo
 
 def clean_pre_event(evento):
     evento_limpio = {
@@ -75,7 +76,7 @@ class Event:
         url = urls.MATCH_STATS.format(event_id=self.event_id)
         print(f"Obteniendo estadísticas para el evento {self.event_id} desde {url}...")
         try:
-            event_stats = self.client.get(url)
+            event_stats = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para el evento {self.event_id}")
             event_stats = None
@@ -85,7 +86,7 @@ class Event:
         url = urls.MATCH_LINEUPS.format(event_id=self.event_id)
         print(f"Obteniendo alineaciones para el evento {self.event_id} desde {url}...")
         try:
-            lineups = self.client.get(url)
+            lineups = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las alineaciones para el evento {self.event_id}")
             lineups = None
@@ -95,7 +96,7 @@ class Event:
         url = urls.MATCH_VOTES.format(event_id=self.event_id)
         print(f"Obteniendo votaciones para el evento {self.event_id} desde {url}...")
         try:
-            votes = self.client.get(url)
+            votes = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las votaciones para el evento {self.event_id}")
             votes = None
@@ -105,7 +106,7 @@ class Event:
         url = urls.MATCH_ODDS.format(event_id=self.event_id)
         print(f"Obteniendo cuotas para el evento {self.event_id} desde {url}...")
         try:
-            odds_data = self.client.get(url)
+            odds_data = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las cuotas para el evento {self.event_id}")
             odds_data = None

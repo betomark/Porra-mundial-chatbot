@@ -1,5 +1,6 @@
 from datafc.utils._client import SofascoreClient
 import utils.folder_maker
+from utils.scraper import capturar_json_directo
 import urls
 import json
 from default_dicts import PLAYER_DEFAULT_STATS
@@ -16,7 +17,7 @@ class Player:
         url = urls.PLAYER_SEASONS.format(player_id=self.player_id)
         try:
             print(f"Obteniendo temporadas para el jugador {self.name}...")
-            seasons_data = self.client.get(url)
+            seasons_data = capturar_json_directo(url)
         except:
             print(f"⚠️ No se pudieron obtener las temporadas para el jugador {self.name}")
             return None
@@ -29,7 +30,7 @@ class Player:
         url = urls.PLAYER_SEASON_STATS.format(player_id=self.player_id, tournament_id=tournament_id, season_id=season_id)
         try:
             print(f"Obteniendo estadísticas para el jugador {self.name} en {tournament_name} - {season_name}...")
-            player_stats = self.client.get(url)
+            player_stats = capturar_json_directo(url)['statistics']
         except:
             print(f"⚠️ No se pudieron obtener las estadísticas para {self.name} en {tournament_name} - {season_name}")
             return None
@@ -102,18 +103,26 @@ class Player:
         player_seasons = self.get_player_seasons()
         player_stats = PLAYER_DEFAULT_STATS.copy()
         for tournament in player_seasons["uniqueTournamentSeasons"]:
+            tournament_name = tournament["uniqueTournament"]["name"]
             for season in tournament["seasons"]:
                 season_year = season["year"]
-                if season_year == str(year) or season_year.split("/")[1] == str(year)[-2:]:
+                if season_year == str(year) or season_year[-2:] == str(year)[-2:]:
                     tournament_id = tournament["uniqueTournament"]["id"]
                     season_id = season["id"]
+                    season_name = season["name"]
                     season_stats = self.get_player_season_stats(tournament_id, tournament_name, season_id, season_name)
+
                     for stat_key, stat_value in season_stats.items():
-                        if stat_key == "rating":
+                        if isinstance(stat_value, dict) or stat_key in ["id", "type"]:
+                            continue
+                        elif stat_key not in player_stats.keys():
+                            print(f"⚠️ Nueva estadística encontrada: {stat_key}. Se añadirá al resumen con valor {stat_value}.")
+                            player_stats[stat_key] = stat_value
+                        elif stat_key == "rating":
                             pass
                         elif player_stats[stat_key] is None:
                             player_stats[stat_key] = stat_value
-                        elif stat_key.contains("Percentage"):
+                        elif "Percentage" in stat_key:
                             player_stats[stat_key] += stat_value
                             player_stats[stat_key] /= 2
                         else:
@@ -137,11 +146,13 @@ def merge_player_summary_stats_by_year(player_stats_list):
     merged_stats = PLAYER_DEFAULT_STATS.copy()
     for player_stats in player_stats_list:
         for stat_key, stat_value in player_stats.items():
-            if stat_key == "rating":
+            if stat_key not in merged_stats.keys():
+                merged_stats[stat_key] = stat_value
+            elif stat_key == "rating":
                 pass
             elif merged_stats[stat_key] is None:
                 merged_stats[stat_key] = stat_value
-            elif stat_key.contains("Percentage"):
+            elif "Percentage" in stat_key:
                 merged_stats[stat_key] += stat_value
                 merged_stats[stat_key] /= 2
             else:

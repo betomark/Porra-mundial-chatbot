@@ -92,6 +92,9 @@ try:
 
 except Exception as e:
     print(f"❌ Ocurrió un error general: {e}")
+
+driver.quit()
+
 world_cup = tournaments.Tournament(tournament_id=16, name="FIFA World Cup", season_id=58210, season_name= "World Cup 2026")
 standings = world_cup.get_tournament_season_standings(season_id=58210, store=True)
 if not rankings:
